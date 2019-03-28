@@ -110,7 +110,7 @@
 					}, 100);
 					return;
 				}
-				obj.value = `${window.location.href}${hashed}`;
+				obj.value = `${window.location.href}#${hashed}`;
 			});
 		};
 
@@ -122,10 +122,12 @@
 			const hash = location.split('/');
 			if(!hash[hash.length-1]) return;
 			const parsed = hash[hash.length-1];
-			fetch(`${ep}/${parsed}`).then(response => response.json()).then(data => {
-				if(!data.ok) return;
-				const url = data.result.url;
-				window.location.replace(url);
+			fetch(`${ep}/${parsed.substr(1)}`)
+				.then(response => response.json())
+				.then(data => {
+					if(!data.ok) return;
+					const url = data.result.url;
+					window.location.replace(url);
 			});
 		};
 
