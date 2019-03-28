@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>llllllllllllinks!</title>
+	<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+	<style type="text/css">
+		html, body {
+			margin: 0;
+			padding: 0;
+			font-family: 'Roboto', sans-serif;
+		}
+		.wrap {
+			height: 100vh;
+			width: 100vw;
+			background: #7F8688;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+		}
+		#ilink {
+			width: 50vw;
+			height: 45px;
+			font-size: 35px;
+			font-family: 'Roboto', sans-serif;
+			border-radius: 5px;
+			border-style: none;
+			padding: 2px 10px;
+			outline: none;
+			background: #7F8688;
+			color: #FFFFFF;
+		}
+		.buttons {
+			width: 50vw;
+			margin-top: 10px;
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: center;
+			color: white;
+		}
+		.shorten, .enlarge {
+			background: #F3E367;
+			color: #929D9E;
+			opacity: 0.7;
+			width: 48%;
+			height: 60px;
+			border-radius: 7px;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			font-size: 35px;
+			cursor: pointer;
+		}
+		.shorten:hover, .enlarge:hover {
+			box-shadow: 1px 1px 10px rgba(0,0,0,0.35);
+		}
+	</style>
+</head>
+<body>
+	<div class="wrap">
+		<div class="input">
+			<input type="text" id="ilink" name="link" placeholder="paste your link here...">
+		</div>
+		<div class="buttons">
+			<div class="shorten" onclick="short()">
+				short
+			</div>
+			<div class="enlarge"  onclick="long()">
+				long
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		const ep = 'https://www.jsonstore.io/383e71c0e91cc6174c2d2055401d210e2d585c0612ee3c75b5eb7ac0db2b62c5';
+		const hash = (url, len) => {
+	    let hashed = '';
+	    const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	    for (let i = 0; i < len; i++)
+	      hashed += alpha.charAt(Math.floor(Math.random() * alpha.length));
+	    return hashed;
+		};
+
+		const check = url => {
+			const protocol = url.startsWith("http://") || url.startsWith("https://") || url.startsWith("ftp://");
+			if(!protocol) return `http://${url}`;
+			return url;
+		};
+
+		const encode = len => {
+			const obj = document.querySelector('#ilink');
+			const link = obj.value;
+			if(!link) return;
+			const url = check(link);
+			const hashed = hash(url, len);
+			const headers = new Headers();
+			headers.append('Content-Type', 'application/json');
+			fetch(`${ep}/${hashed}`, {
+				headers: headers,
+				method: 'POST',
+				body: JSON.stringify({'url': url})
+			}).then(response => {
+				return response.json();
+			}).then(data => {
+				if(!data.ok) {
+					obj.style.color = 'red';
+					setTimeout(() => {
+						obj.style.color = '#FFFFFF';
+					}, 100);
+					return;
+				}
+				obj.value = `${window.location.href}${hashed}`;
+			});
+		};
+
+		const short = () => { encode(5); };
+		const long = () => { encode(100); };
+
+		const redirect = () => {
+			const location = window.location.href;
+			const hash = location.split('/');
+			if(!hash[hash.length-1]) return;
+			const parsed = hash[hash.length-1];
+			fetch(`${ep}/${parsed}`).then(response => response.json()).then(data => {
+				if(!data.ok) return;
+				const url = data.result.url;
+				window.location.replace(url);
+			});
+		};
+
+		redirect();
+	</script>
+</body>
+</html>
